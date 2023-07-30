@@ -33,7 +33,7 @@ public class GHGenerator {
         Output: Set of geohashes that are contained within the area at various levels
         these GH can be stored in a file or Persistent DB for lookup for matching aganist geometry
         More over this can be stored in bitmap(Roaringbitmaps) for effcient lookups
-        
+
 
      */
     private static GeometryFactory geometryFactory = new GeometryFactory();

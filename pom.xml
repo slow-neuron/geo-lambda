@@ -3,6 +3,7 @@
     	<packaging>pom</packaging>
         <modules>
             <module>exp/jts-exp</module>
+            <module>exp/bitmaptest</module>
         </modules>
         <groupId>ai.geolambda</groupId>
       <artifactId>geolambda</artifactId>
