@@ -4,6 +4,8 @@
         <modules>
             <module>exp/jts-exp</module>
             <module>exp/bitmaptest</module>
+            <module>geo-data-generator</module>
+            <module>matcher/spatial-matcher-gh</module>
         </modules>
         <groupId>ai.geolambda</groupId>
       <artifactId>geolambda</artifactId>

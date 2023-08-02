@@ -1,4 +1,4 @@
-package ai.geolambda.exp;
+package ai.geolambda;
 
 import ch.hsr.geohash.BoundingBox;
 import ch.hsr.geohash.GeoHash;
@@ -16,7 +16,7 @@ import java.util.*;
  * level determined by area & longest common prefix geohash
  *
  */
-public class GHGenerator {
+public class OptimGHGenerator {
 
 
     /* Algo
@@ -34,9 +34,9 @@ public class GHGenerator {
         these GH can be stored in a file or Persistent DB for lookup for matching aganist geometry
         More over this can be stored in bitmap(Roaringbitmaps) for effcient lookups
 
+        In this implementation it's stored in LSM based DB , RocksDB
 
      */
-    private static GeometryFactory geometryFactory = new GeometryFactory();
 
     private static final char[] base32 = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'b', 'c', 'd', 'e', 'f',
             'g', 'h', 'j', 'k', 'm', 'n', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
@@ -121,9 +121,8 @@ public class GHGenerator {
     }
 
 
-    private Set<String> ghgenerated = new HashSet<>();
     Set<String> outerEnvelopeCoarseGH = new HashSet<>();
-    public void findAllGhInPolygon(final Geometry g, int precision){
+    public void generateGH(final Geometry g, int precision,final String placeId){
 
         for(int geomIdx=0; geomIdx<g.getNumGeometries(); geomIdx++){
 
@@ -269,35 +268,19 @@ public class GHGenerator {
                 maxLevel=Math.max(maxLevel,levelId);
             }
 
-            System.out.println("max level is " + maxLevel);
+            //can do every level also for larger geohashes
+            //store them in MatchGHStore
             for(GeoHash ghMax:ghIntersects.get(maxLevel)){
                 if (isGHContained(ghMax,innerGeom)){
-                    System.out.println("contained " + ghMax.toBase32() +" " + ghMax.toBase32().length());
+                    String gh = ghMax.toBase32();
+                    //System.out.println("contained " + ghMax.toBase32() +" " + ghMax.toBase32().length());
+                    MatchGHStore.getInstance().addRecord(gh.length()+"LVL",gh,placeId);
                 }else{
                     //System.out.println("not contained " + ghMax.toBase32());
                 }
             }
 
         }//fi geo
-
-
-
     }
 
-    public static void main(String[] args) {
-
-
-
-
-        String polygonFile = "/home/boson/geo-processing/geo-lambda/exp/jts-exp/src/test/resources/nyc-polygon.geojson";
-       // String polygonFile = "/home/boson/geo-processing/geo-lambda/exp/jts-exp/src/test/resources/nyc-large-area.geojson";
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(polygonFile));
-            Geometry g = new GeoJsonReader().read(reader);
-            GHGenerator ghgen = new GHGenerator();
-            ghgen.findAllGhInPolygon(g,8);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
 }
