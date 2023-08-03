@@ -55,6 +55,28 @@ public class PolygonGHLoader {
         }
     }
 
+    public void buildSpatialIndex(){
+
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(polygonCollectionGeoJson));
+            String line = reader.readLine();
+            while(line!=null){
+                Feature feature  = (Feature) GeoJSONFactory.create(line.trim());
+                if (feature!=null){
+                    //assume has a place id
+                    String id = (String) feature.getId();
+                    //add to index for matching
+                    TreeBasedMatcher.getInstance().indexGeom(line,id);
+                }
+
+
+                line = reader.readLine();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
 
 
 
@@ -64,6 +86,9 @@ public class PolygonGHLoader {
         PolygonGHLoader ghLoader = new PolygonGHLoader(args[0]);
         ghLoader.initDb(args[1]);
         ghLoader.processPolygon();
+        //choose between any one of them
+        //differential hashing or spatial indexing
+        ghLoader.buildSpatialIndex();
         MatchGHStore.getInstance().close();
 
 
