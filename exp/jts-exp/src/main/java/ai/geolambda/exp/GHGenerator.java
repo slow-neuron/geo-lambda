@@ -7,7 +7,9 @@ import org.locationtech.jts.geom.*;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.*;
 
 
@@ -77,6 +79,7 @@ public class GHGenerator {
                     LinearRing ring = new GeometryFactory().createLinearRing( hashBBArray );
                     LinearRing holes[] = null; // use LinearRing[] to represent holes
                     Polygon hashPolygon = new GeometryFactory().createPolygon(ring, holes );
+
                     boolean intersect = hashPolygon.intersects(testGeom);
                     if (intersect){
                         children.add(childGh);
@@ -125,6 +128,7 @@ public class GHGenerator {
     Set<String> outerEnvelopeCoarseGH = new HashSet<>();
     public void findAllGhInPolygon(final Geometry g, int precision){
 
+
         for(int geomIdx=0; geomIdx<g.getNumGeometries(); geomIdx++){
 
             Geometry innerGeom = g.getGeometryN(geomIdx);
@@ -138,14 +142,14 @@ public class GHGenerator {
 
             for(int cidx =0;cidx < cords.length;cidx++){
               //assume input is lon,lat
-              System.out.println(cords[cidx].x + " " + cords[cidx].y);
+              //System.out.println(cords[cidx].x + " " + cords[cidx].y);
                 outerEnvelopeCoarseGH.add (GeoHash.geoHashStringWithCharacterPrecision(cords[cidx].y,cords[cidx].x,precision));
 
             }
 
             System.out.println("coarse GH");
             outerEnvelopeCoarseGH.forEach(x->{
-                System.out.println(x);
+                //System.out.println(x);
 
             });
             String longestMatchingGH =
@@ -154,7 +158,7 @@ public class GHGenerator {
             int maxLenGH =9;
             if (longestMatchingGH.length()< 4) {
                 System.out.println("longest gh " + longestMatchingGH);
-                maxLenGH=6;
+                maxLenGH=7;
             }else if (longestMatchingGH.length()>=5 && longestMatchingGH.length()<=6){
                 //gh8 should be good enough
                 maxLenGH=8;
@@ -247,6 +251,11 @@ public class GHGenerator {
             }
             System.out.println("total GH generated " + ghIntersects.get(maxLenGH).size() +" setting " + maxLenGH);
 
+            try{
+                BufferedWriter writer = new BufferedWriter(new FileWriter("/tmp/feature-gh/feature.csv"));
+            }catch (Exception e){
+
+            }
             //check which all intersects which all contains
 
             System.out.println("hash contains fully");
@@ -272,7 +281,7 @@ public class GHGenerator {
             System.out.println("max level is " + maxLevel);
             for(GeoHash ghMax:ghIntersects.get(maxLevel)){
                 if (isGHContained(ghMax,innerGeom)){
-                    System.out.println("contained " + ghMax.toBase32() +" " + ghMax.toBase32().length());
+                    //System.out.println("contained " + ghMax.toBase32() +" " + ghMax.toBase32().length());
                 }else{
                     //System.out.println("not contained " + ghMax.toBase32());
                 }
@@ -289,13 +298,16 @@ public class GHGenerator {
 
 
 
-        String polygonFile = "/home/boson/geo-processing/geo-lambda/exp/jts-exp/src/test/resources/nyc-polygon.geojson";
+        //String polygonFile = "/home/boson/geo-processing/geo-lambda/exp/jts-exp/src/test/resources/nyc-polygon.geojson";
        // String polygonFile = "/home/boson/geo-processing/geo-lambda/exp/jts-exp/src/test/resources/nyc-large-area.geojson";
+        String polygonFile = "/home/boson/Downloads/brg-nyc.geojson";
+
+
         try {
             BufferedReader reader = new BufferedReader(new FileReader(polygonFile));
             Geometry g = new GeoJsonReader().read(reader);
             GHGenerator ghgen = new GHGenerator();
-            ghgen.findAllGhInPolygon(g,8);
+            ghgen.findAllGhInPolygon(g,7);
         }catch (Exception e){
             e.printStackTrace();
         }
